@@ -1,0 +1,61 @@
+{
+  "name": "light-vite",
+  "version": "1.0.0",
+  "description": " core module for light-vite",
+  "main": "./dist/node/index.js",
+  "module": "./dist/node/index.js",
+  "types": "./dist/node/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/node/index.d.ts",
+      "import": "./dist/node/index.js",
+      "require": "./index.cjs"
+    },
+    "./client": {
+      "types": "./client.d.ts"
+    },
+    "./dist/client/*": "./dist/client/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "client.d.ts",
+    "index.cjs",
+    "types"
+  ],
+  "scripts": {
+    "start": "tsup --watch",
+    "build": "tsup --minify"
+  },
+  "bin": {
+    "light-vite": "bin/light-vite"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^4.17.14",
+    "@types/node": "^18.11.9",
+    "commander": "^9.4.1",
+    "debug": "^4.3.4",
+    "esbuild": "^0.15.14",
+    "esbuild-darwin-arm64": "^0.15.14",
+    "react-refresh": "^0.14.0",
+    "resolve": "^1.22.1",
+    "rollup": "^3.3.0",
+    "ws": "^8.11.0"
+  },
+  "devDependencies": {
+    "@types/babel__core": "^7.1.20",
+    "@types/debug": "^4.1.7",
+    "@types/fs-extra": "^9.0.13",
+    "@types/resolve": "^1.20.2",
+    "chalk": "^5.1.2",
+    "chokidar": "^3.5.3",
+    "es-module-lexer": "^1.1.0",
+    "express": "^4.18.2",
+    "magic-string": "^0.26.7",
+    "sirv": "^2.0.2"
+  }
+}

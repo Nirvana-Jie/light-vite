@@ -1,0 +1,10 @@
+node_modules
+.env
+test.*
+*.private.*
+*-debug.*
+tests
+**/lib/**/*.d.ts
+**/lib/**/*.js
+.eslintcache
+
