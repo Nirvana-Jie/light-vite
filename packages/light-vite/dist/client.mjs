@@ -1,100 +1,75 @@
-// src/client/client.ts
 console.log("[light-vite] connecting...");
-var socket = new WebSocket("ws://localhost:__HMR_PORT__", "light-vite-hmr");
-socket.addEventListener("message", async ({ data }) => {
-  handleMessage(JSON.parse(data)).catch(console.error);
+var p = new WebSocket("ws://localhost:__HMR_PORT__", "light-vite-hmr");
+p.addEventListener("message", async ({ data: e }) => {
+  u(JSON.parse(e)).catch(console.error);
 });
-async function handleMessage(payload) {
-  switch (payload.type) {
+async function u(e) {
+  switch (e.type) {
     case "connected":
-      console.log("[light-vite] connected.");
-      setInterval(() => socket.send("ping"), 1e3);
+      console.log("[light-vite] connected."),
+        setInterval(() => p.send("ping"), 1e3);
       break;
     case "update":
-      payload.updates.forEach((update) => {
-        if (update.type === "js-update") {
-          fetchUpdate(update);
-        }
+      e.updates.forEach((t) => {
+        t.type === "js-update" && f(t);
       });
       break;
   }
 }
-var hotModulesMap = /* @__PURE__ */ new Map();
-var pruneMap = /* @__PURE__ */ new Map();
-var createHotContext = (ownerPath) => {
-  const mod = hotModulesMap.get(ownerPath);
-  if (mod) {
-    mod.callbacks = [];
-  }
-  function acceptDeps(deps, callback) {
-    const mod2 = hotModulesMap.get(ownerPath) || {
-      id: ownerPath,
-      callbacks: []
+var i = new Map(),
+  g = new Map(),
+  m = (e) => {
+    let t = i.get(e);
+    t && (t.callbacks = []);
+    function n(s, o) {
+      let a = i.get(e) || { id: e, callbacks: [] };
+      a.callbacks.push({ deps: s, fn: o }), i.set(e, a);
+    }
+    return {
+      accept(s) {
+        (typeof s == "function" || !s) && n([e], ([o]) => s && s(o));
+      },
+      prune(s) {
+        g.set(e, s);
+      },
     };
-    mod2.callbacks.push({
-      deps,
-      fn: callback
-    });
-    hotModulesMap.set(ownerPath, mod2);
-  }
-  return {
-    accept(deps) {
-      if (typeof deps === "function" || !deps) {
-        acceptDeps([ownerPath], ([mod2]) => deps && deps(mod2));
-      }
-    },
-    prune(cb) {
-      pruneMap.set(ownerPath, cb);
-    }
   };
-};
-async function fetchUpdate({ path, timestamp }) {
-  const mod = hotModulesMap.get(path);
-  if (!mod)
-    return;
-  const moduleMap = /* @__PURE__ */ new Map();
-  const modulesToUpdate = /* @__PURE__ */ new Set();
-  modulesToUpdate.add(path);
-  await Promise.all(
-    Array.from(modulesToUpdate).map(async (dep) => {
-      const [path2, query] = dep.split("?");
-      try {
-        const newMod = await import(path2 + `?t=${timestamp}${query ? `&${query}` : ""}`);
-        moduleMap.set(dep, newMod);
-      } catch (e) {
-      }
-    })
+async function f({ path: e, timestamp: t }) {
+  let n = i.get(e);
+  if (!n) return;
+  let s = new Map(),
+    o = new Set();
+  return (
+    o.add(e),
+    await Promise.all(
+      Array.from(o).map(async (a) => {
+        let [r, c] = a.split("?");
+        try {
+          let d = await import(r + `?t=${t}${c ? `&${c}` : ""}`);
+          s.set(a, d);
+        } catch {}
+      })
+    ),
+    () => {
+      for (let { deps: a, fn: r } of n.callbacks) r(a.map((c) => s.get(c)));
+      console.log(`[light-vite] hot updated: ${e}`);
+    }
   );
-  return () => {
-    for (const { deps, fn } of mod.callbacks) {
-      fn(deps.map((dep) => moduleMap.get(dep)));
-    }
-    console.log(`[light-vite] hot updated: ${path}`);
-  };
 }
-var sheetsMap = /* @__PURE__ */ new Map();
-function updateStyle(id, content) {
-  let style = sheetsMap.get(id);
-  if (!style) {
-    style = document.createElement("style");
-    style.setAttribute("type", "text/css");
-    style.innerHTML = content;
-    document.head.appendChild(style);
-  } else {
-    style.innerHTML = content;
-  }
-  sheetsMap.set(id, style);
+var l = new Map();
+function y(e, t) {
+  let n = l.get(e);
+  n
+    ? (n.innerHTML = t)
+    : ((n = document.createElement("style")),
+      n.setAttribute("type", "text/css"),
+      (n.innerHTML = t),
+      document.head.appendChild(n)),
+    l.set(e, n);
 }
-function removeStyle(id) {
-  const style = sheetsMap.get(id);
-  if (style) {
-    document.head.removeChild(style);
-  }
-  sheetsMap.delete(id);
+function M(e) {
+  let t = l.get(e);
+  t && document.head.removeChild(t), l.delete(e);
 }
-export {
-  createHotContext,
-  removeStyle,
-  updateStyle
-};
+export { m as createHotContext, M as removeStyle, y as updateStyle };
 //# sourceMappingURL=client.mjs.map

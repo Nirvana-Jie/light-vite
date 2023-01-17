@@ -1,127 +1,98 @@
 "use strict";
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// src/client/client.ts
-var client_exports = {};
-__export(client_exports, {
-  createHotContext: () => createHotContext,
-  removeStyle: () => removeStyle,
-  updateStyle: () => updateStyle
-});
-module.exports = __toCommonJS(client_exports);
+var d = Object.defineProperty;
+var g = Object.getOwnPropertyDescriptor;
+var f = Object.getOwnPropertyNames;
+var m = Object.prototype.hasOwnProperty;
+var y = (e, t) => {
+    for (var n in t) d(e, n, { get: t[n], enumerable: !0 });
+  },
+  M = (e, t, n, s) => {
+    if ((t && typeof t == "object") || typeof t == "function")
+      for (let a of f(t))
+        !m.call(e, a) &&
+          a !== n &&
+          d(e, a, {
+            get: () => t[a],
+            enumerable: !(s = g(t, a)) || s.enumerable,
+          });
+    return e;
+  };
+var h = (e) => M(d({}, "__esModule", { value: !0 }), e);
+var C = {};
+y(C, { createHotContext: () => k, removeStyle: () => x, updateStyle: () => w });
+module.exports = h(C);
 console.log("[light-vite] connecting...");
-var socket = new WebSocket("ws://localhost:__HMR_PORT__", "light-vite-hmr");
-socket.addEventListener("message", async ({ data }) => {
-  handleMessage(JSON.parse(data)).catch(console.error);
+var u = new WebSocket("ws://localhost:__HMR_PORT__", "light-vite-hmr");
+u.addEventListener("message", async ({ data: e }) => {
+  b(JSON.parse(e)).catch(console.error);
 });
-async function handleMessage(payload) {
-  switch (payload.type) {
+async function b(e) {
+  switch (e.type) {
     case "connected":
-      console.log("[light-vite] connected.");
-      setInterval(() => socket.send("ping"), 1e3);
+      console.log("[light-vite] connected."),
+        setInterval(() => u.send("ping"), 1e3);
       break;
     case "update":
-      payload.updates.forEach((update) => {
-        if (update.type === "js-update") {
-          fetchUpdate(update);
-        }
+      e.updates.forEach((t) => {
+        t.type === "js-update" && H(t);
       });
       break;
   }
 }
-var hotModulesMap = /* @__PURE__ */ new Map();
-var pruneMap = /* @__PURE__ */ new Map();
-var createHotContext = (ownerPath) => {
-  const mod = hotModulesMap.get(ownerPath);
-  if (mod) {
-    mod.callbacks = [];
-  }
-  function acceptDeps(deps, callback) {
-    const mod2 = hotModulesMap.get(ownerPath) || {
-      id: ownerPath,
-      callbacks: []
+var i = new Map(),
+  v = new Map(),
+  k = (e) => {
+    let t = i.get(e);
+    t && (t.callbacks = []);
+    function n(s, a) {
+      let o = i.get(e) || { id: e, callbacks: [] };
+      o.callbacks.push({ deps: s, fn: a }), i.set(e, o);
+    }
+    return {
+      accept(s) {
+        (typeof s == "function" || !s) && n([e], ([a]) => s && s(a));
+      },
+      prune(s) {
+        v.set(e, s);
+      },
     };
-    mod2.callbacks.push({
-      deps,
-      fn: callback
-    });
-    hotModulesMap.set(ownerPath, mod2);
-  }
-  return {
-    accept(deps) {
-      if (typeof deps === "function" || !deps) {
-        acceptDeps([ownerPath], ([mod2]) => deps && deps(mod2));
-      }
-    },
-    prune(cb) {
-      pruneMap.set(ownerPath, cb);
-    }
   };
-};
-async function fetchUpdate({ path, timestamp }) {
-  const mod = hotModulesMap.get(path);
-  if (!mod)
-    return;
-  const moduleMap = /* @__PURE__ */ new Map();
-  const modulesToUpdate = /* @__PURE__ */ new Set();
-  modulesToUpdate.add(path);
-  await Promise.all(
-    Array.from(modulesToUpdate).map(async (dep) => {
-      const [path2, query] = dep.split("?");
-      try {
-        const newMod = await import(path2 + `?t=${timestamp}${query ? `&${query}` : ""}`);
-        moduleMap.set(dep, newMod);
-      } catch (e) {
-      }
-    })
+async function H({ path: e, timestamp: t }) {
+  let n = i.get(e);
+  if (!n) return;
+  let s = new Map(),
+    a = new Set();
+  return (
+    a.add(e),
+    await Promise.all(
+      Array.from(a).map(async (o) => {
+        let [r, c] = o.split("?");
+        try {
+          let p = await import(r + `?t=${t}${c ? `&${c}` : ""}`);
+          s.set(o, p);
+        } catch {}
+      })
+    ),
+    () => {
+      for (let { deps: o, fn: r } of n.callbacks) r(o.map((c) => s.get(c)));
+      console.log(`[light-vite] hot updated: ${e}`);
+    }
   );
-  return () => {
-    for (const { deps, fn } of mod.callbacks) {
-      fn(deps.map((dep) => moduleMap.get(dep)));
-    }
-    console.log(`[light-vite] hot updated: ${path}`);
-  };
 }
-var sheetsMap = /* @__PURE__ */ new Map();
-function updateStyle(id, content) {
-  let style = sheetsMap.get(id);
-  if (!style) {
-    style = document.createElement("style");
-    style.setAttribute("type", "text/css");
-    style.innerHTML = content;
-    document.head.appendChild(style);
-  } else {
-    style.innerHTML = content;
-  }
-  sheetsMap.set(id, style);
+var l = new Map();
+function w(e, t) {
+  let n = l.get(e);
+  n
+    ? (n.innerHTML = t)
+    : ((n = document.createElement("style")),
+      n.setAttribute("type", "text/css"),
+      (n.innerHTML = t),
+      document.head.appendChild(n)),
+    l.set(e, n);
 }
-function removeStyle(id) {
-  const style = sheetsMap.get(id);
-  if (style) {
-    document.head.removeChild(style);
-  }
-  sheetsMap.delete(id);
+function x(e) {
+  let t = l.get(e);
+  t && document.head.removeChild(t), l.delete(e);
 }
-// Annotate the CommonJS export names for ESM import in node:
-0 && (module.exports = {
-  createHotContext,
-  removeStyle,
-  updateStyle
-});
+0 && (module.exports = { createHotContext, removeStyle, updateStyle });
 //# sourceMappingURL=client.js.map

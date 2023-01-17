@@ -25,7 +25,8 @@ export interface ServerContext {
 }
 
 export async function startDevServer() {
-  const app = express(); //新建express中间件
+  //新建express中间件
+  const app = express();
   const root = process.cwd();
   const startTime = Date.now();
   const watcher = chokidar.watch(root, {
