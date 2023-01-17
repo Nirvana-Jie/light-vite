@@ -62,6 +62,15 @@ export const flattenId = (id: string): string =>
     .replace(/\./g, "__")
     .replace(/(\s*>\s*)/g, "___");
 
+export function lookupFile(dir: string, formats: string[]): string | undefined {
+  for (const format of formats) {
+    const fullPath = path.resolve(dir, format);
+    if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
+      return fs.readFileSync(fullPath, "utf-8");
+    }
+  }
+}
+
 //获取第三方包的逻辑
 export function getPkgModulePath(moduleName: string, root: string) {
   //处理react/jsx-runtime
@@ -79,4 +88,30 @@ export function getPkgModulePath(moduleName: string, root: string) {
     const normalizedRoot = normalizePath(resolvedRoot + ext); //后续做虚拟模块的时候 使用\\这个斜杠会报错改成/
     return normalizedRoot;
   }
+  //处理react vue情况
+  const pkg = lookupFile(root, [`./node_modules/${moduleName}/package.json`]);
+  if (pkg) {
+    const json = JSON.parse(pkg);
+    const main = json.main.endsWith(".js") ? json.main : json.main + ".js";
+    const packageRoot = main ? main : "index.js";
+    const resolvedRoot = path.resolve(
+      root,
+      "node_modules",
+      moduleName,
+      packageRoot
+    );
+    const normalizedRoot = normalizePath(resolvedRoot);
+    return normalizedRoot;
+  } else {
+    throw new Error(`❌: can not find module ${moduleName}`);
+  }
 }
+
+// export function lookupFile (dir:string,formats:string[]) :string|undefined {
+//   for (const format of formats) {
+//     const fullPath = path.resolve(dir, format);
+//     if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
+//         return fullPath;
+//       }
+//     }
+//   }

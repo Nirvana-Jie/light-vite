@@ -54,6 +54,7 @@ export function transformMiddleware(serverContext: ServerContext) {
       return next();
     }
     const url = req.url;
+    // console.log(url);
     debug("transformMiddleware: %s", url);
     // transform JS and CSS request
     if (
@@ -63,6 +64,8 @@ export function transformMiddleware(serverContext: ServerContext) {
       isImportRequest(url)
     ) {
       let result = await transformRequest(url, serverContext);
+      // console.log(result);
+
       if (!result) {
         return next();
       }

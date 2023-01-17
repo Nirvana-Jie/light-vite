@@ -51,7 +51,9 @@ export function preBundlePlugin(
           const id = loadInfo.path;
           const root = process.cwd();
           const entryPath = flatIdToImports[id];
-          console.log(entryPath);
+          console.log(id);
+          console.log(flatIdToImports);
+          console.log("entryPath", entryPath);
           const code = await fs.readFile(entryPath, "utf-8");
           const [imports, exports] = await parse(code);
           const proxyModule: string[] = [];
@@ -60,22 +62,27 @@ export function preBundlePlugin(
             // 构造代理模块
             // 下面的代码后面会解释
             const res = require(entryPath);
-            console.log(res, entryPath);
+            console.log(res);
 
             const specifiers = Object.keys(res);
-            console.log(specifiers);
+            // console.log(specifiers);
+            if (!specifiers.includes("default")) {
+              proxyModule.push(`export default require("${entryPath}")`);
+            }
             proxyModule.push(
-              `export { ${specifiers.join(",")} } from "${entryPath}"`,
-              `export default require("${entryPath}")`
+              `export {${specifiers.join(",")}} from "${entryPath}"`
             );
           } else {
             // esm 格式比较好处理，export * 或者 export default 即可
             //@ts-ignore
-            if (exports.includes("default")) {
-              proxyModule.push(`import d from "${entryPath}";export default d`);
-            }
-            proxyModule.push(`export * from "${entryPath}"`);
+            proxyModule.push(
+              `import a from ${entryPath}`,
+              `export default a`,
+              `export * from ${entryPath}`
+            );
           }
+          console.log(proxyModule);
+
           debug("代理模块内容: %o", proxyModule.join("\n"));
           const loader = path.extname(entryPath).slice(1);
           return {

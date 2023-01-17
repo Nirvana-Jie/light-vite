@@ -7,7 +7,7 @@ export function indexHtmlMiddware(serverContext: ServerContext) {
     if (req.url === "/") {
       const { root } = serverContext;
       const indexHtmlPath = path.join(root, "index.html");
-      console.log(indexHtmlPath);
+      // console.log(indexHtmlPath);
 
       if (await pathExists(indexHtmlPath)) {
         const rawHtml = await readFile(indexHtmlPath, "utf8");
