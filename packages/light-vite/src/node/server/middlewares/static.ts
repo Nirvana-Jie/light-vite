@@ -5,6 +5,8 @@ import sirv from "sirv";
 export function staticMiddleware() {
   const serveFromRoot = sirv("/", { dev: true });
   return async (req: any, res: any, next: any) => {
+    // console.log(req.url);
+
     if (!req.url) {
       return;
     }

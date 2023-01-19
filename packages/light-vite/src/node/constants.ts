@@ -31,3 +31,5 @@ export const DEFAULT_EXTERSIONS = [".tsx", ".ts", ".jsx", "js"];
 export const HMR_HEADER = "vite-hmr";
 export const CLIENT_PUBLIC_PATH = "/@vite/client";
 export const HMR_PORT = 24678;
+
+export const ASSET_TYPES = [".jpg", ".png", ".svg", ".gif", ".ico"];

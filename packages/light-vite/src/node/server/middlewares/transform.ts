@@ -37,6 +37,8 @@ export async function transformRequest(
   if (mod) {
     mod.transformResult = transformResult;
   }
+  // console.log("transformResult",transformResult);
+
   return transformResult;
 }
 
@@ -57,20 +59,17 @@ export function transformMiddleware(serverContext: ServerContext) {
     // console.log(url);
     debug("transformMiddleware: %s", url);
     // transform JS and CSS request
-    if (
-      isJSRequest(url) ||
-      isCSSRequest(url) ||
-      // 静态资源的 import 请求，如 import logo from './logo.svg';
-      isImportRequest(url)
-    ) {
+    if (isJSRequest(url) || isCSSRequest(url) || isImportRequest(url)) {
       let result = await transformRequest(url, serverContext);
-      // console.log(result);
 
       if (!result) {
         return next();
       }
       if (result && typeof result !== "string") {
         result = result.code;
+        if (result!.includes("?import")) {
+          console.log(result + "\n");
+        }
       }
       res.statusCode = 200;
       res.setHeader("Content-Type", "application/javascript");

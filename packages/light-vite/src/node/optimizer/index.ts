@@ -26,13 +26,13 @@ export async function optimize(root: string) {
   );
   deps.forEach((dep: string) => {
     const flattenDep = flattenId(dep);
-    console.log(flattenDep);
+    // console.log(flattenDep);
     const newEntry = getPkgModulePath(dep, root)!;
 
-    console.log(newEntry);
+    // console.log(newEntry);
     flattenDeps.add(flattenDep);
     flattenDepsMapEntries[flattenDep] = newEntry;
-    console.log(flattenDepsMapEntries);
+    // console.log(flattenDepsMapEntries);
   });
   // 3. 预构建依赖
   await build({

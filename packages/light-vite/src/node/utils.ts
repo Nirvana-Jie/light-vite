@@ -106,12 +106,3 @@ export function getPkgModulePath(moduleName: string, root: string) {
     throw new Error(`❌: can not find module ${moduleName}`);
   }
 }
-
-// export function lookupFile (dir:string,formats:string[]) :string|undefined {
-//   for (const format of formats) {
-//     const fullPath = path.resolve(dir, format);
-//     if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
-//         return fullPath;
-//       }
-//     }
-//   }
